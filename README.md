@@ -1,47 +1,151 @@
-# 学生信息管理系统 (Student Information Management System)
+# 学生信息管理系统（Spring Boot + Vue 离线架构）
 
-[cite_start]本项目旨在提供一个全面管理学生全流程信息的高效平台，涵盖从基础学籍到科研、就业的多维度数据管理 [cite: 4, 5]。
+## 1. 项目结构
+- `backend/`：Spring Boot 后端（Controller-Service-Dao 分层）+ 本地静态前端资源。
+- `sql/schema.sql`：MySQL 建库建表、外键约束、初始化数据。
+- `deploy/docker-compose.yml`：离线可用的一键启动编排（MySQL + Tomcat）。
 
+## 2. 后端能力
+- 学生信息 CRUD：`/api/students`
+- 导入导出：支持 `.xlsx` 与 `.csv`
+  - 导入：`POST /api/students/import`
+  - 导出：`GET /api/students/export?type=xlsx|csv`
+  - 模板：`GET /api/students/template?type=xlsx|csv`
+- 就业率聚合：`GET /api/students/stats/employment`
+- 鉴权：`POST /api/auth/login`，基于本地 JWT 秘钥签发与验证（不依赖外网认证）。
 
+## 3. 本地 Swagger/OpenAPI
+启动后访问：
+- `http://localhost:8080/student/swagger-ui.html`
+- `http://localhost:8080/student/v3/api-docs`
 
-## 功能概览
+## 4. Docker Compose 快速部署
+> 第一次启动前，请先在宿主机编译 WAR
 
-* [cite_start]**学生信息管理**：全面管理学生从入学到毕业的全流程信息，包括档案维护、学籍管理及联系方式 [cite: 4, 18, 20, 21, 22, 23]。
-* [cite_start]**科研与荣誉追踪**：精细化记录论文发表、专利信息、科研项目参与及奖学金、竞赛获奖等荣誉 [cite: 28, 29, 30, 31, 32, 33, 34, 35, 36, 37]。
-* [cite_start]**就业状态管理**：实时跟踪就业去向、单位信息、行业及薪资情况 [cite: 24, 25, 26, 27]。
-* [cite_start]**统计分析与交互**：提供各类数据的统计分析、趋势分析及可视化报表，支持 Excel/CSV 批量导入导出 [cite: 6, 7, 44, 45, 46, 47, 48, 52, 55, 56, 57, 60, 61]。
-* [cite_start]**权限管理**：系统内置权限控制，严格区分学生用户与管理员用户的操作权限 [cite: 8, 9, 10, 11]。
+```bash
+cd backend
+mvn clean package -DskipTests
+cd ../deploy
+docker compose up -d
+```
 
-## 技术架构
+访问入口：
+- 系统主页：`http://localhost:8080/student/`
+- 默认账号：`admin / admin123`
 
-[cite_start]本系统采用主流技术栈构建，确保系统安全性、稳定性和扩展性 [cite: 12, 13, 14, 16, 285]：
+## 5. 离线前端资源说明
+为满足完全离线，前端依赖不走 CDN，统一从 `backend/src/main/resources/static/lib/` 读取：
+- `vue/vue.global.prod.js`
+- `element-plus/index.full.min.js` 与 `index.css`
+- `echarts/echarts.min.js`
 
-| 层级 | 技术栈 |
-| :--- | :--- |
-| **后端** | [cite_start]Spring Boot, Spring Security + JWT, MySQL, Redis, Swagger/OpenAPI [cite: 286, 287, 288, 289, 290, 291] |
-| **前端** | [cite_start]Vue.js/React, Element UI/Ant Design, ECharts, Vuex/Redux [cite: 292, 293, 294, 295, 296] |
-| **部署** | [cite_start]Nginx + Tomcat, MySQL 主从复制, 定期数据备份 [cite: 297, 298, 299, 301] |
+当前仓库提供了本地路径与占位文件，请将对应离线包放入上述路径。
 
-## 核心数据库设计
+---
 
-[cite_start]系统核心表结构设计如下 [cite: 74]：
+## 6. README 进一步优化建议（可直接执行）
 
-* [cite_start]`students`：学生基本信息表 [cite: 75]。
-* [cite_start]`employment_info`：就业信息记录表 [cite: 106]。
-* [cite_start]`research_achievements`：科研成果管理表 [cite: 136]。
-* [cite_start]`honor_records`：荣誉与表彰记录表 [cite: 157]。
-* [cite_start]`users`：系统账号及权限管理表 [cite: 182]。
-* [cite_start]`college_major`：学院与专业字典设置表 [cite: 205]。
+### 6.1 建议的构建与发布流程（更稳妥）
+```bash
+# 1) 后端打包
+cd backend
+mvn -U clean package -DskipTests
 
-## 系统接口 (API)
+# 2) 校验 WAR 产物
+ls -lh target/student-system-1.0.0.war
 
-* [cite_start]`GET /api/students`：获取学生列表分页查询 [cite: 223, 225]。
-* [cite_start]`POST /api/students`：添加/修改学生信息 [cite: 236, 238]。
-* [cite_start]`GET /api/employment/statistics`：就业率及趋势统计 [cite: 249, 251]。
-* [cite_start]`POST /api/auth/login`：用户登录验证 [cite: 277, 279]。
+# 3) 启动容器
+cd ../deploy
+docker compose up -d
 
-## 未来扩展规划
+# 4) 查看容器状态与日志
+docker compose ps
+docker compose logs -f mysql tomcat
+```
 
-* [cite_start]**移动端接入**：开发移动端 APP 及微信小程序 [cite: 304, 305]。
-* [cite_start]**智能化升级**：引入人工智能推荐与大数据分析平台 [cite: 306, 307]。
-* [cite_start]**生态集成**：与学校现有系统对接及第三方服务集成 [cite: 308, 309, 310]。
+### 6.2 数据库初始化检查
+```bash
+# 查看 MySQL 初始化日志
+docker compose logs mysql | tail -n 100
+
+# 进入 MySQL 容器验证表结构
+docker exec -it student-mysql mysql -uroot -proot123 -e "USE student_system; SHOW TABLES;"
+```
+
+---
+
+## 7. 当前环境 Maven Central 403 的解决方案
+
+你遇到的 403 通常是因为：
+- 环境代理策略拦截；
+- DNS/出口网络限制；
+- Maven mirror 配置缺失或被错误覆盖。
+
+下面给你一套“排查 + 修复”命令（按顺序执行）：
+
+### 7.1 快速排查
+```bash
+# 1) 查看 Maven 生效配置与仓库地址
+mvn -v
+mvn help:effective-settings
+
+# 2) 直连探测中央仓库（看是否 403/could not connect）
+curl -I https://repo.maven.apache.org/maven2/
+
+# 3) 检查环境代理变量
+env | grep -Ei 'http_proxy|https_proxy|no_proxy'
+```
+
+### 7.2 使用国内镜像（联网环境推荐）
+创建 `~/.m2/settings.xml`：
+```bash
+mkdir -p ~/.m2
+cat > ~/.m2/settings.xml <<'XML'
+<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 https://maven.apache.org/xsd/settings-1.0.0.xsd">
+  <mirrors>
+    <mirror>
+      <id>aliyunmaven</id>
+      <mirrorOf>*</mirrorOf>
+      <name>aliyun maven</name>
+      <url>https://maven.aliyun.com/repository/public</url>
+    </mirror>
+  </mirrors>
+</settings>
+XML
+```
+
+然后执行：
+```bash
+cd backend
+mvn -U clean package -DskipTests
+```
+
+### 7.3 完全离线环境（推荐用于内网/脱网）
+在一台可联网机器上预下载依赖：
+```bash
+cd backend
+mvn -U -DskipTests dependency:go-offline
+```
+
+打包本地仓库并拷贝到离线服务器：
+```bash
+tar -czf m2-cache.tar.gz ~/.m2/repository
+# 拷贝到离线机器后
+mkdir -p ~/.m2
+tar -xzf m2-cache.tar.gz -C ~/.m2
+```
+
+离线机器上构建：
+```bash
+cd backend
+mvn -o clean package -DskipTests
+```
+
+### 7.4 企业内网最佳实践（长期方案）
+接入公司 Nexus/Artifactory，并把 `settings.xml` 的 mirror 指向内网私服，然后：
+```bash
+cd backend
+mvn -U clean verify
+```
