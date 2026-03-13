@@ -1,3 +1,8 @@
 body { margin: 0; padding: 16px; font-family: Arial, sans-serif; }
 #chart { height: 320px; margin-top: 16px; }
-.toolbar { margin-bottom: 12px; display: flex; gap: 8px; }
+.toolbar, .editor { margin-bottom: 12px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+button { cursor: pointer; }
+.error-banner { background: #fde2e2; color: #b42318; border: 1px solid #fda29b; padding: 8px 12px; border-radius: 4px; margin-bottom: 8px; }
+.loading-banner { background: #eff8ff; color: #175cd3; border: 1px solid #84caff; padding: 8px 12px; border-radius: 4px; margin-bottom: 8px; }
+.file-upload { border: 1px dashed #999; padding: 4px 8px; border-radius: 4px; }
+.page-info { margin-top: 8px; color: #555; }
