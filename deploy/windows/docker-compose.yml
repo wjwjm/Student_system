@@ -1,0 +1,29 @@
+version: "3.9"
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: student-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root123
+      MYSQL_DATABASE: student_system
+      TZ: Asia/Shanghai
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./sql/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+
+  tomcat:
+    image: tomcat:10.1-jdk17
+    container_name: student-tomcat
+    restart: unless-stopped
+    depends_on:
+      - mysql
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./student-system-1.0.0.war:/usr/local/tomcat/webapps/student.war
+
+volumes:
+  mysql_data:
