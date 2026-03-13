@@ -149,3 +149,41 @@ mvn -o clean package -DskipTests
 cd backend
 mvn -U clean verify
 ```
+
+---
+
+## 8. 固化 Maven settings 与镜像策略（内网/离线可重复构建）
+
+仓库已内置三套 Maven settings：
+- 稳定在线配置（默认 Central）：`build-support/maven/settings.xml`
+- 镜像加速配置（Aliyun）：`build-support/maven/settings-mirror.xml`
+- 离线配置：`build-support/maven/settings-offline.xml`
+
+### 8.1 在线环境（推荐，稳定优先）
+```bash
+cd backend
+mvn -s ../build-support/maven/settings.xml clean compile
+mvn -s ../build-support/maven/settings.xml test
+```
+
+### 8.2 在线环境（网络受限时，启用镜像加速）
+```bash
+cd backend
+mvn -s ../build-support/maven/settings-mirror.xml clean compile
+mvn -s ../build-support/maven/settings-mirror.xml test
+```
+
+### 8.3 预热依赖缓存（给离线环境准备）
+```bash
+cd backend
+mvn -s ../build-support/maven/settings.xml -DskipTests dependency:go-offline
+```
+
+### 8.4 离线环境构建
+```bash
+cd backend
+mvn -s ../build-support/maven/settings-offline.xml -o clean compile
+mvn -s ../build-support/maven/settings-offline.xml -o test
+```
+
+> 若企业内网有 Nexus/Artifactory，可在 `build-support/maven/settings-mirror.xml` 中把 `<mirror>` 的 URL 替换为内网仓库地址，实现构建策略固化。
